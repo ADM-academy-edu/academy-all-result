@@ -169,9 +169,9 @@ document.getElementById("roll").addEventListener("input", function(){
         name.value = results[roll].name;
         father.value = results[roll].father;
         institute.value = results[roll].institute;
-        name.readOnly = true;
-        father.readOnly = true;
-        institute.readOnly = true;
+        name = true;
+        father = true;
+        institute = true;
         document.getElementById("message").innerHTML = "Existing student loaded. Select phase to load marks.";
         document.getElementById("message").className = "message success";
     } else {
@@ -260,6 +260,7 @@ function saveStudent(){
     </button>
 </body>
 </html>
+
 
 
 
