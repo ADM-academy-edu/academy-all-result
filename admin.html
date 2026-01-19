@@ -165,16 +165,19 @@ document.getElementById("roll").addEventListener("input", function(){
     var table = document.getElementById("subjectsTable");
 
     if(results[roll]){
-        // Existing student → fill name/father/institute readonly
-        name.value = results[roll].name;
-        father.value = results[roll].father;
-        institute.value = results[roll].institute;
-        name = true;
-        father = true;
-        institute = true;
-        document.getElementById("message").innerHTML = "Existing student loaded. Select phase to load marks.";
-        document.getElementById("message").className = "message success";
-    } else {
+    name.value = results[roll].name;
+    father.value = results[roll].father;
+    institute.value = results[roll].institute;
+
+    // Allow editing to fix mistakes
+    name.readOnly = false;
+    father.readOnly = false;
+    institute.readOnly = false;
+
+    document.getElementById("message").innerHTML = "Existing student loaded. You can correct name/father/institute.";
+    document.getElementById("message").className = "message success";
+    }
+else {
         // New student → editable
         name.value = "";
         father.value = "";
@@ -233,10 +236,10 @@ function saveStudent(){
         return;
     }
 
-    if(!results[roll]){
-        results[roll] = { roll, name, father, institute, phases:{} };
-    }
-
+   // Always update name/father/institute even if roll exists
+results[roll].name = document.getElementById("name").value.trim();
+results[roll].father = document.getElementById("father").value.trim();
+results[roll].institute = document.getElementById("institute").value.trim();
     // Collect subjects
     var subjects = [];
     var table = document.getElementById("subjectsTable");
@@ -260,6 +263,7 @@ function saveStudent(){
     </button>
 </body>
 </html>
+
 
 
 
