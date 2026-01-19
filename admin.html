@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Admin Panel - Intelligence Academy</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+body {
+    font-family: 'Roboto', sans-serif;
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    background: linear-gradient(-45deg, #6a11cb, #2575fc, #ff758c, #ff7eb3);
+    background-size: 400% 400%;
+    animation: gradientBG 15s ease infinite;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: #fff;
+}
+@keyframes gradientBG {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+.academy-logo {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    margin-top: 20px;
+    animation: pulseLogo 2s infinite alternate;
+}
+@keyframes pulseLogo {
+    0% { transform: scale(1) rotate(0deg); }
+    50% { transform: scale(1.1) rotate(15deg); }
+    100% { transform: scale(1) rotate(0deg); }
+}
+.academy-name {
+    font-size: 36px;
+    font-weight: bold;
+    margin: 10px 0;
+    text-align: center;
+    text-shadow: 2px 2px 8px rgba(0,0,0,0.5);
+    animation: fadeInText 2s ease forwards;
+}
+@keyframes fadeInText { from {opacity:0;} to {opacity:1;} }
+.box {
+    background: rgba(255,255,255,0.1);
+    backdrop-filter: blur(15px);
+    width: 550px;
+    padding: 30px;
+    border-radius: 20px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+    text-align: center;
+    margin-top: 20px;
+    animation: slideIn 1s ease forwards;
+}
+@keyframes slideIn {
+    from { transform: translateY(-100%); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+input, select, button {
+    width: 90%;
+    padding: 12px;
+    margin: 10px 0;
+    border-radius: 10px;
+    border: none;
+    font-size: 16px;
+}
+button {
+    background: linear-gradient(90deg, #6a11cb, #2575fc);
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+}
+button:hover {
+    transform: scale(1.05);
+    box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+}
+.message {
+    font-size: 18px;
+    margin-top: 15px;
+    padding: 10px 20px;
+    border-radius: 15px;
+    display: inline-block;
+    animation: bounceMsg 1s infinite alternate;
+}
+.success { background: rgba(0,255,0,0.2); color: #00ff00; }
+.error { background: rgba(255,0,0,0.2); color: #ff0000; }
+table { width: 100%; margin-top: 15px; border-collapse: collapse; background: rgba(255,255,255,0.2); border-radius: 10px; }
+th, td { padding: 8px; text-align: center; border: 1px solid #fff; }
+th { background: rgba(0,0,0,0.3); }
+@keyframes bounceMsg {
+    0% { transform: translateY(0); }
+    100% { transform: translateY(-5px); }
+}
+</style>
+</head>
+<body>
+
+<img src="logo.jpg" alt="Intelligence Academy Logo" class="academy-logo">
+<div class="academy-name">Admin Panel - Intelligence Academy</div>
+
+<div class="box">
+    <h3>Add / Update Student</h3>
+
+    <input type="text" id="roll" placeholder="Enter Roll Number">
+    <input type="text" id="name" placeholder="Student Name">
+    <input type="text" id="father" placeholder="Father Name">
+    <input type="text" id="institute" placeholder="Institute Name">
+
+    <select id="phase">
+        <option value="" disabled selected>Select Your Round</option>
+        <option value="Pre Phase">Pre Phase</option>
+        <option value="School Pre Board">School Pre Board</option>
+        <option value="Phase 1">Phase 1</option>
+        <option value="Phase 2">Phase 2</option>
+        <option value="Phase 3">Phase 3</option>
+        <option value="Phase 4">Phase 4</option>
+        <option value="Phase 5">Phase 5</option>
+        <option value="Phase 6">Phase 6</option>
+        <option value="Pre Board Round 1">Pre Board Round 1</option>
+        <option value="Pre Board Round 2">Pre Board Round 2</option>
+        <option value="Final Pre Board">Final Pre Board</option>
+    </select>
+
+    <table id="subjectsTable">
+        <tr><th>Subject</th><th>Total Marks</th><th>Obtained Marks</th></tr>
+        <tr><td>English</td><td><input type="number"></td><td><input type="number"></td></tr>
+        <tr><td>Urdu</td><td><input type="number"></td><td><input type="number"></td></tr>
+        <tr><td>Math</td><td><input type="number"></td><td><input type="number"></td></tr>
+        <tr><td>Physics</td><td><input type="number"></td><td><input type="number"></td></tr>
+        <tr><td>Chemistry</td><td><input type="number"></td><td><input type="number"></td></tr>
+        <tr><td>Computer Science</td><td><input type="number"></td><td><input type="number"></td></tr>
+        <tr><td>Terjma Tul Quran</td><td><input type="number"></td><td><input type="number"></td></tr>
+        <tr><td>Islamyat</td><td><input type="number"></td><td><input type="number"></td></tr>
+    </table>
+
+    <button onclick="saveStudent()">Save Student Data</button>
+    <div id="message"></div>
+</div>
+
+<script>
+// ----------------- PASSWORD PROTECTION -----------------
+var password = prompt("Enter Admin Password:");
+if(password !== "MySecret123"){
+    alert("Access Denied!");
+    window.location.href = "index.html";
+}
+// ----------------- LOCAL STORAGE -----------------
+var results = JSON.parse(localStorage.getItem("results")) || {};
+
+// Auto-fill name/father/institute and previous phase data
+document.getElementById("roll").addEventListener("input", function(){
+    var roll = this.value.trim();
+    var name = document.getElementById("name");
+    var father = document.getElementById("father");
+    var institute = document.getElementById("institute");
+    var phaseSelect = document.getElementById("phase");
+    var table = document.getElementById("subjectsTable");
+
+    if(results[roll]){
+        // Existing student → fill name/father/institute readonly
+        name.value = results[roll].name;
+        father.value = results[roll].father;
+        institute.value = results[roll].institute;
+        name.readOnly = true;
+        father.readOnly = true;
+        institute.readOnly = true;
+        document.getElementById("message").innerHTML = "Existing student loaded. Select phase to load marks.";
+        document.getElementById("message").className = "message success";
+    } else {
+        // New student → editable
+        name.value = "";
+        father.value = "";
+        institute.value = "";
+        name.readOnly = false;
+        father.readOnly = false;
+        institute.readOnly = false;
+        document.getElementById("message").innerHTML = "New student detected. Fill details and phase.";
+        document.getElementById("message").className = "message success";
+    }
+
+    // Clear subjects table for new phase selection
+    for(var i=1;i<table.rows.length;i++){
+        table.rows[i].cells[1].children[0].value = "";
+        table.rows[i].cells[2].children[0].value = "";
+    }
+});
+
+// Load phase data when phase selected
+document.getElementById("phase").addEventListener("change", function(){
+    var roll = document.getElementById("roll").value.trim();
+    var phase = this.value;
+    var table = document.getElementById("subjectsTable");
+
+    if(results[roll] && results[roll].phases[phase]){
+        // Load existing marks
+        var subjects = results[roll].phases[phase].subjects;
+        for(var i=0;i<subjects.length;i++){
+            table.rows[i+1].cells[1].children[0].value = subjects[i].total;
+            table.rows[i+1].cells[2].children[0].value = subjects[i].obtained;
+        }
+        document.getElementById("message").innerHTML = "Phase data loaded. You can update if needed.";
+        document.getElementById("message").className = "message success";
+    } else {
+        // New phase → empty inputs
+        for(var i=1;i<table.rows.length;i++){
+            table.rows[i].cells[1].children[0].value = "";
+            table.rows[i].cells[2].children[0].value = "";
+        }
+        document.getElementById("message").innerHTML = "No previous data for this phase. Enter marks manually.";
+        document.getElementById("message").className = "message success";
+    }
+});
+
+// Save student data
+function saveStudent(){
+    var roll = document.getElementById("roll").value.trim();
+    var name = document.getElementById("name").value.trim();
+    var father = document.getElementById("father").value.trim();
+    var institute = document.getElementById("institute").value.trim();
+    var phase = document.getElementById("phase").value;
+
+    if(!roll || !phase || (!results[roll] && (!name || !father || !institute))){
+        document.getElementById("message").innerHTML = "❌ Please fill all required fields";
+        document.getElementById("message").className = "message error";
+        return;
+    }
+
+    if(!results[roll]){
+        results[roll] = { roll, name, father, institute, phases:{} };
+    }
+
+    // Collect subjects
+    var subjects = [];
+    var table = document.getElementById("subjectsTable");
+    for(var i=1; i<table.rows.length; i++){
+        var subj = table.rows[i].cells[0].innerText;
+        var total = parseFloat(table.rows[i].cells[1].children[0].value) || 0;
+        var obtained = parseFloat(table.rows[i].cells[2].children[0].value) || 0;
+        subjects.push({subject: subj, total: total, obtained: obtained});
+    }
+
+    results[roll].phases[phase] = { subjects: subjects };
+
+    localStorage.setItem("results", JSON.stringify(results));
+
+    document.getElementById("message").innerHTML = "✅ Student data saved successfully!";
+    document.getElementById("message").className = "message success";
+}
+</script>
+</body>
+</html>

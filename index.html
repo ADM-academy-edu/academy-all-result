@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Intelligence Academy Result</title>
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+
+    body {
+        font-family: 'Roboto', sans-serif;
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(-45deg, #6a11cb, #2575fc, #ff758c, #ff7eb3);
+        background-size: 400% 400%;
+        animation: gradientBG 15s ease infinite;
+        color: #fff;
+    }
+
+    @keyframes gradientBG {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+
+    .academy-logo {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        animation: pulseLogo 2s infinite alternate;
+    }
+
+    @keyframes pulseLogo {
+        0% { transform: scale(1) rotate(0deg); }
+        50% { transform: scale(1.1) rotate(15deg); }
+        100% { transform: scale(1) rotate(0deg); }
+    }
+
+    .academy-name {
+        font-size: 40px;
+        font-weight: bold;
+        margin: 10px 0;
+        text-align: center;
+        text-shadow: 2px 2px 8px rgba(0,0,0,0.5);
+        animation: fadeInText 2s ease forwards;
+    }
+
+    @keyframes fadeInText { from {opacity:0;} to {opacity:1;} }
+
+    .box {
+        background: rgba(255,255,255,0.1);
+        backdrop-filter: blur(15px);
+        width: 450px;
+        padding: 30px;
+        border-radius: 20px;
+        box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+        text-align: center;
+        margin-top: 30px;
+        animation: slideIn 1s ease forwards;
+    }
+
+    @keyframes slideIn {
+        from { transform: translateY(-100%); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+
+    input, select, button {
+        width: 90%;
+        padding: 12px;
+        margin: 10px 0;
+        border-radius: 10px;
+        border: none;
+        font-size: 16px;
+    }
+
+    button {
+        background: linear-gradient(90deg, #6a11cb, #2575fc);
+        color: white;
+        font-weight: bold;
+        cursor: pointer;
+        transition: 0.3s;
+    }
+
+    button:hover {
+        transform: scale(1.05);
+        box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+    }
+
+    .message {
+        font-size: 22px;
+        margin-top: 20px;
+        padding: 10px 20px;
+        border-radius: 15px;
+        display: inline-block;
+        animation: bounceMsg 1s infinite alternate;
+    }
+
+    .pass { background: rgba(0,255,0,0.2); color: #00ff00; }
+    .fail { background: rgba(255,0,0,0.2); color: #ff0000; }
+
+    @keyframes bounceMsg {
+        0% { transform: translateY(0); }
+        100% { transform: translateY(-10px); }
+    }
+
+</style>
+</head>
+<body>
+<!-- Hidden Admin Link -->
+
+
+<img src="logo.jpg" alt="Intelligence Academy Logo" class="academy-logo">
+<div class="academy-name">Intelligence Academy</div>
+
+<div class="box">
+    <h3>Check Your Result</h3>
+    <input type="text" id="roll" placeholder="Enter Roll Number">
+
+    <select id="phase">
+    <option value="" disabled selected>Select Your Round</option>
+    <option value="Pre Phase">Pre Phase</option>
+    <option value="School Pre Board">School Pre Board</option>
+    <option value="Phase 1">Phase 1</option>
+    <option value="Phase 2">Phase 2</option>
+    <option value="Phase 3">Phase 3</option>
+    <option value="Phase 4">Phase 4</option>
+    <option value="Phase 5">Phase 5</option>
+    <option value="Phase 6">Phase 6</option>
+    <option value="Pre Board Round 1">Pre Board Round 1</option>
+    <option value="Pre Board Round 2">Pre Board Round 2</option>
+    <option value="Final Pre Board">Final Pre Board</option>
+</select>
+
+    <button onclick="checkResult()">Check Result</button>
+    <div id="message"></div>
+    <button>
+    <a href="admin.html" id="adminLink" " style="color: white; text-decoration: none;">Section For Admin Panel</a>
+    </button>
+</div>
+
+<script>
+// Fetch all results from localStorage
+var results = JSON.parse(localStorage.getItem("results")) || {};
+
+function checkResult() {
+    var roll = document.getElementById("roll").value.trim();
+    var phase = document.getElementById("phase").value;
+    var msg = document.getElementById("message");
+    msg.innerHTML = "";
+
+    if(results[roll] && results[roll].phases[phase]){
+        var student = results[roll];
+        var studentPhase = student.phases[phase];
+        var totalMarks = 0;
+        var totalObtained = 0;
+        var failSubjects = [];
+        var absentCount = 0;
+
+        studentPhase.subjects.forEach(s => {
+            totalMarks += s.total;
+            if(s.obtained === 0){
+                absentCount++;
+                failSubjects.push(s.subject);
+            } else {
+                totalObtained += s.obtained;
+                if((s.obtained/s.total)*100 < 40) failSubjects.push(s.subject);
+            }
+        });
+
+        if(failSubjects.length>0 || absentCount>=3) student.status="FAIL";
+        else student.status="PASS";
+
+        if(student.status === "PASS") {
+            msg.innerHTML = "🎉🎉 Congratulations 🎉🎉";
+            msg.className = "message pass";
+        } else {
+            msg.innerHTML = "😢 Unfortunately! You have failed 😢";
+            msg.className = "message fail";
+        }
+
+        // Save selected phase data for result page
+        student.totalMarks = totalMarks;
+        student.totalObtained = totalObtained;
+        student.failSubjects = failSubjects;
+        student.selectedPhase = phase;
+        localStorage.setItem("studentData", JSON.stringify(student));
+
+        setTimeout(function(){
+            window.location.href="result.html";
+        }, 1500);
+
+    } else {
+        msg.innerHTML = "❌ Result not found for this Roll No & Phase";
+        msg.className = "message fail";
+    }
+}
+    // --- Hidden Admin Shortcut ---
+document.addEventListener("keydown", function(e){
+    if(e.ctrlKey && e.altKey && e.key === "A"){
+        var adminLink = document.getElementById("adminLink");
+        if(adminLink){
+            adminLink.style.display = "block"; // optional
+            adminLink.click(); // open admin.html
+        }
+    }
+});
+</script>
+</body>
+</html>
